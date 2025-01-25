@@ -17,36 +17,38 @@
 
   outputs = inputs@{self, nixpkgs, home-manager, emacs, ...}:
     let
-      system = "x86_64-linux";
-      pkgs = import nixpkgs { inherit system; overlays = [ emacs.overlay ]; };
+      inherit (nixpkgs) lib;
+      perSystem = lib.genAttrs ["x86_64-linux"];
     in
       {
-        services.emacs.package = pkgs.emacs-unstable;
-
-        packages.${system}.default =
-          pkgs.emacsWithPackagesFromUsePackage {
-            config = ./emacs.el;
-            defaultInitFile = false;
-            package = pkgs.emacs-unstable;
+        nixosModules = {
+          default = self.nixosModules.emacs;
+          emacs = {config, pkgs, ...}: {
+            services.emacs.package = self.packages.${pkgs.system}.emacs;
+            environment.systemPackages = [config.services.emacs.package];
           };
-
-        apps.${system}.default = {
-          type = "app";
-          program = "${pkgs.emacsWithPackagesFromUsePackage {
-            config = ./emacs.el;
-            defaultInitFile = false;
-            package = pkgs.emacs-unstable;
-          }}/bin/emacs";
         };
 
-        # environment.systemPackages = [
-        #       (pkgs.emacsWithPackagesFromUsePackage {
-        #         config = ./emacs.el;
-        #         package = pkgs.emacs-git;
-        #         alwaysEnsure = true;
-        #       })
-        # ];
+        overlays = {
+          default = self.overlays.emacs;
+          emacs = emacs.overlay;
+        };
 
+        packages = perSystem (system: {
+          default = self.packages.${system}.emacs;
+          emacs = emacs.lib.${system}.emacsWithPackagesFromUsePackage {
+            config = ./emacs.el;
+            defaultInitFile = false;
+            package = emacs.packages.${system}.emacs-unstable;
+          };
+        });
 
+        apps = perSystem (system: {
+          default = self.apps.${system}.emacs;
+          emacs = {
+            type = "app";
+            program = "${self.packages.${system}.emacs}/bin/emacs";
+          };
+        });
       };
 }

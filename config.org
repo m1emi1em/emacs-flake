@@ -1,0 +1,29 @@
+#+TITLE: GNU/Emacs
+#+STARTUP: overview
+#+PROPERTY: header-args:emacs-lisp :tangle t
+#+PROPERTY: header-args :mkdirp yes
+
+* Init
+
+#+begin_src emacs-lsip
+  (require 'package)
+#+end_src
+
+* Settings
+
+** UI
+
+#+Begin_src emacs-lisp
+(menu-bar-mode -1)
+(tool-bar-mode -1)
+(scroll-bar-mode -1)
+#+end_src
+
+** Binds
+
+*** Copy/paste
+
+#+begin_src emacs-lisp
+(keymap-global-set "C-S-c" 'kill-ring-save)
+(keymap-global-set "C-S-v" 'clipboard-yank)
+#+end_src

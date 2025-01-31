@@ -37,7 +37,9 @@
         packages = perSystem (system: {
           default = self.packages.${system}.emacs;
           emacs = emacs.lib.${system}.emacsWithPackagesFromUsePackage {
-            config = ./emacs.el;
+            config = ./config.org;
+            alwaysTangle = true;
+            alwaysEnsure = true;
             defaultInitFile = false;
             package = emacs.packages.${system}.emacs-unstable;
           };
